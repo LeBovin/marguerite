@@ -9,7 +9,10 @@
 #define MYLIB_SOCKET_HPP
 
 #include <string>
+#include <functional>
 #include <netinet/in.h>
+
+using socketAcceptCallback = std::function<void(int, const sockaddr_in &)>;
 
 namespace marguerite
 {
@@ -20,12 +23,22 @@ namespace marguerite
 		private:
 			//FIELDS
 			int m_port;
+			int m_sockfd;
 			std::string m_host;
 			sockaddr_in m_sockaddr;
+			bool m_binded;
+			bool m_listening;
 
 		public:
 			//CTOR DTOR
-			Socket(const std::string &host, int port, bool block);
+			Socket();
+			~Socket();
+
+			//FUNCTIONS
+			void mListen(std::size_t capacity);
+			void mAccept(socketAcceptCallback callback);
+			void mBind(const std::string &host, int port);
+			void mConnect(const std::string &host, int port);
 
 		};
 	};
