@@ -10,13 +10,25 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <asm/ioctls.h>
+#include <sys/ioctl.h>
 #include "Socket.hpp"
 
-marguerite::net::Socket::Socket()
+marguerite::net::Socket::Socket(int ip_type, int protocol_type)
 : m_binded(false),
-  m_listening(false)
+  m_listening(false),
+  m_connected(false)
 {
-	m_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+#ifdef _WIN32
+	WSADATA wsa;
+	SOCKET sock;
+
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+		std::runtime_error("cannot start winsock.");
+#endif
+
+	m_sockfd = socket(ip_type, protocol_type, 0);
 	if (m_sockfd == -1)
 		throw std::runtime_error("cannot create socket.");
 }
@@ -69,6 +81,7 @@ void marguerite::net::Socket::mListen(std::size_t capacity)
 		throw std::runtime_error("cannot listen on given socket.");
 
 	m_listening = true;
+	m_connected = true;
 }
 
 void marguerite::net::Socket::mConnect(const std::string &host, int port)
@@ -80,4 +93,17 @@ void marguerite::net::Socket::mConnect(const std::string &host, int port)
 
 	if (connect(m_sockfd, (sockaddr *)&addr, sizeof(addr)) == -1)
 		throw std::runtime_error("cannot connect to given remote addr/port.");
+
+	m_connected = true;
+}
+std::size_t marguerite::net::Socket::avaible() const
+{
+	if (!m_connected || !m_listening)
+		return 0;
+
+	std::size_t amount;
+	if (ioctl(m_sockfd, FIONREAD, &amount) == -1)
+		throw std::runtime_error("cannot get amount of avaible data on the socket.");
+
+	return (amount);
 }

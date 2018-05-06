@@ -11,6 +11,11 @@
 #include <string>
 #include <functional>
 #include <netinet/in.h>
+#include <vector>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#endif
 
 using socketAcceptCallback = std::function<void(int, const sockaddr_in &)>;
 
@@ -28,10 +33,11 @@ namespace marguerite
 			sockaddr_in m_sockaddr;
 			bool m_binded;
 			bool m_listening;
+			bool m_connected;
 
 		public:
 			//CTOR DTOR
-			Socket();
+			Socket(int ip_type, int protocol_type);
 			~Socket();
 
 			//FUNCTIONS
@@ -39,6 +45,12 @@ namespace marguerite
 			void mAccept(socketAcceptCallback callback);
 			void mBind(const std::string &host, int port);
 			void mConnect(const std::string &host, int port);
+			void mReceive(std::size_t amount);
+			void mSend(const std::vector<uint8_t> &buffer);
+			void mSend(const uint8_t *buffer, std::size_t n);
+
+			//PROPERTIES
+			std::size_t avaible() const;
 
 		};
 	};
