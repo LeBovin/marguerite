@@ -17,12 +17,24 @@
 #include <winsock2.h>
 #endif
 
-using socketAcceptCallback = std::function<void(int, const sockaddr_in &)>;
-
 namespace marguerite
 {
 	namespace net
 	{
+        using socketAcceptCallback = std::function<void(int, const sockaddr_in &)>;
+
+	    enum class IpType
+        {
+	        V4 = 2,
+	        V6 = 10,
+        };
+
+	    enum class ProtocolType
+		{
+	    	TCP = 1,
+	    	UDP = 2
+		};
+
 		class Socket
 		{
 		private:
@@ -38,6 +50,7 @@ namespace marguerite
 		public:
 			//CTOR DTOR
 			Socket(int ip_type, int protocol_type);
+            Socket(IpType ip_type, ProtocolType protocol_type);
 			~Socket();
 
 			//FUNCTIONS

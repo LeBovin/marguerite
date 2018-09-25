@@ -14,6 +14,10 @@
 #include <sys/ioctl.h>
 #include "Socket.hpp"
 
+marguerite::net::Socket::Socket(IpType ip_type, ProtocolType protocol_type)
+: Socket((int)ip_type, (int)protocol_type)
+{ }
+
 marguerite::net::Socket::Socket(int ip_type, int protocol_type)
 : m_binded(false),
   m_listening(false),
@@ -49,7 +53,7 @@ void marguerite::net::Socket::mBind(const std::string &host, int port)
 	sockaddr_in laddr;
 	laddr.sin_family = AF_INET;
 	laddr.sin_addr.s_addr = inet_addr(host.c_str());
-	laddr.sin_port = port;
+	laddr.sin_port = htons(port);
 
 	if (bind(m_sockfd, (sockaddr *)&laddr, sizeof(laddr)) == -1)
 		throw std::runtime_error("cannot bind the socket.");
