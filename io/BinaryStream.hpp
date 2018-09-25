@@ -18,6 +18,7 @@ class BinaryStream
 {
 public:
 	//CTOR DTOR
+	BinaryStream();
 	BinaryStream(const std::vector<uint8_t> &buffer);
 	BinaryStream(const std::uint8_t *buffer, std::size_t size);
 	~BinaryStream() = default;
@@ -25,17 +26,12 @@ public:
 	//PUBLIC FUNCTIONS
 	void clear();
 	void forward(std::size_t n);
-	int readInt();
-	short readShort();
-	const std::string &readString();
-	void fastReadBytes(void *dest, std::size_t n);
-	const std::vector<uint8_t> &readBytes(std::size_t n);
 
 	//PROPERTIES
 	size_t getOffset() const;
 	size_t getLength() const;
 
-private:
+protected:
 	//FIELDS
 	std::mutex m_lock;
 	std::size_t m_offset;
