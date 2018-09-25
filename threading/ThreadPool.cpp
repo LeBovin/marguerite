@@ -5,7 +5,7 @@
 **      Made on 2018/04 by lebovin
 */
 
-#include "../../inc/concurrency/ThreadPool.hpp"
+#include "ThreadPool.hpp"
 
 ThreadPool::ThreadPool(size_t thread_count)
 : m_isWorking(true)
