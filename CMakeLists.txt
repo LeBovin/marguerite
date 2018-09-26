@@ -15,7 +15,7 @@ add_library(marguerite STATIC
         io/BinaryStreamReader.cpp
         io/BinaryStreamReader.hpp
         io/BinaryStreamWriter.cpp
-        io/BinaryStreamWriter.hpp)
+        io/BinaryStreamWriter.hpp net/TcpServer.cpp net/TcpServer.hpp)
 
 target_include_directories(marguerite PRIVATE .)
 set_target_properties(marguerite PROPERTIES VERSION ${PROJECT_VERSION})
