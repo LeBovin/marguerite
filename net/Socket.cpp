@@ -12,7 +12,31 @@
 #include <arpa/inet.h>
 #include <asm/ioctls.h>
 #include <sys/ioctl.h>
+#include <memory>
+#include <iostream>
 #include "Socket.hpp"
+
+marguerite::net::Socket::Socket(int sockfd, const sockaddr_in &addr)
+{
+    m_binded = false;
+    m_sockfd = sockfd;
+    m_connected = true;
+    m_port = ntohs(addr.sin_port);
+
+    char ip[INET6_ADDRSTRLEN];
+    switch (addr.sin_family)
+    {
+        case AF_INET:
+            inet_ntop(AF_INET, &(addr.sin_addr), ip, INET_ADDRSTRLEN);
+            m_host = std::string(ip, INET_ADDRSTRLEN);
+            break;
+        case AF_INET6:
+            inet_ntop(AF_INET6, &(addr.sin_addr), ip, INET6_ADDRSTRLEN);
+            m_host = std::string(ip, INET6_ADDRSTRLEN);
+            break;
+    }
+    m_listening = false;
+}
 
 marguerite::net::Socket::Socket(IpType ip_type, ProtocolType protocol_type)
 : Socket((int)ip_type, (int)protocol_type)
@@ -61,7 +85,7 @@ void marguerite::net::Socket::mBind(const std::string &host, int port)
 	m_binded = true;
 }
 
-void marguerite::net::Socket::mAccept(socketAcceptCallback callback)
+std::shared_ptr<marguerite::net::Socket> marguerite::net::Socket::mAccept()
 {
 	if (!m_binded || !m_listening)
 		throw std::runtime_error("trying to accept incoming connection on unbinded or non-listening socket.");
@@ -73,7 +97,8 @@ void marguerite::net::Socket::mAccept(socketAcceptCallback callback)
 	if (sockfd == -1)
 		throw std::runtime_error("accepting incoming connection failed.");
 
-	callback(sockfd, addr);
+	auto client = std::make_shared<Socket>(sockfd, addr);
+	return (client);
 }
 
 void marguerite::net::Socket::mListen(std::size_t capacity)
@@ -100,14 +125,42 @@ void marguerite::net::Socket::mConnect(const std::string &host, int port)
 
 	m_connected = true;
 }
-std::size_t marguerite::net::Socket::avaible() const
+int marguerite::net::Socket::available() const
 {
-	if (!m_connected || !m_listening)
+	if (!m_connected)
 		return 0;
 
-	std::size_t amount;
+	int amount;
 	if (ioctl(m_sockfd, FIONREAD, &amount) == -1)
-		throw std::runtime_error("cannot get amount of avaible data on the socket.");
+		throw std::runtime_error("cannot get amount of available data on the socket.");
 
 	return (amount);
+}
+
+std::vector<uint8_t> marguerite::net::Socket::mReceive(std::size_t amount)
+{
+    auto ret = std::vector<uint8_t>(amount + 1);
+
+    read(m_sockfd, ret.data(), amount);
+    return (std::move(ret));
+}
+
+void marguerite::net::Socket::mReceive(uint8_t *dest, std::size_t amount)
+{
+    read(m_sockfd, dest, amount);
+}
+
+void marguerite::net::Socket::mSend(const std::vector<uint8_t> &buffer)
+{
+    write(m_sockfd, buffer.data(), buffer.size());
+}
+
+void marguerite::net::Socket::mSend(const uint8_t *buffer, std::size_t n)
+{
+    write(m_sockfd, buffer, n);
+}
+
+int marguerite::net::Socket::getSockfd() const
+{
+    return m_sockfd;
 }
