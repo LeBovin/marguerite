@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/marguerite.dir/net/Socket.cpp.o CMakeFiles/marguerite.dir/io/BinaryStream.cpp.o  -o marguerite 

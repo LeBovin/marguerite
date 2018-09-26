@@ -4,9 +4,11 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <cstring>
 #include "../io/BinaryStreamWriter.hpp"
 #include "../io/BinaryStreamReader.hpp"
 #include "../net/Socket.hpp"
+#include "../net/TcpServer.hpp"
 
 void io_test()
 {
@@ -29,28 +31,7 @@ void io_test()
 
 }
 
-void network_test()
-{
-    std::cout << "=========NETWORK TESTS==========" << std::endl;
-    marguerite::net::Socket sock(marguerite::net::IpType::V4, marguerite::net::ProtocolType::TCP);
-    auto callback = [](int sockfd, const sockaddr_in &addr)
-    {
-        std::cout << "new connection accepted." << std::endl;
-        close(sockfd);
-    };
-    std::cout << "binding the socket..." << std::endl;
-    sock.mBind("127.0.0.1", 6666);
-    std::cout << "socked binded." << std::endl;
-    std::cout << "listening on the socket..." << std::endl;
-    sock.mListen(1);
-    std::cout << "listening setup." << std::endl;
-    std::cout << "waiting for new connection..." << std::endl;
-    sock.mAccept(callback);
-    std::cout << "=====NETWORK TESTS FINISHED=====" << std::endl;
-}
-
 int main(int argc, char **argv)
 {
     io_test();
-    network_test();
 }
